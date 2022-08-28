@@ -11,3 +11,6 @@ Werkzeug>=1.0.0
 WTForms>=2.2.1
 pycryptodome
 cryptography
+flask_cors
+mysqlclient>=2 
+python-dotenv>=0.20.0
