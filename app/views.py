@@ -12,50 +12,33 @@ from app.forms import SortForm, UserForm, EncryptionForm
 from app.models import User
 # import sqlite3
 
-###
-# Routing for your application.
-###
 import json
 import uuid
 
-
-@app.route('/')
-def home():
-    """Render website's home page."""
-    return render_template('home.html')
+from app.utils.sorting_algorithms import bubble_sort, insertion_sort, quick_sort
 
 
-@app.route('/about/')
-def about():
-    """Render the website's about page."""
-    return render_template('about.html', name="Mary Jane")
 
-@app.route('/users')
-def show_users():
-    users = db.session.query(User).all() # or you could have used User.query.all()
+# @app.route('/add-user', methods=['POST', 'GET'])
+# def add_user():
+#     user_form = UserForm()
 
-    return render_template('show_users.html', users=users)
+#     if request.method == 'POST':
+#         if user_form.validate_on_submit():
+#             # Get validated data from form
+#             name = user_form.name.data # You could also have used request.form['name']
+#             email = user_form.email.data # You could also have used request.form['email']
 
-@app.route('/add-user', methods=['POST', 'GET'])
-def add_user():
-    user_form = UserForm()
+#             # save user to database
+#             user = User(name, email)
+#             db.session.add(user)
+#             db.session.commit()
 
-    if request.method == 'POST':
-        if user_form.validate_on_submit():
-            # Get validated data from form
-            name = user_form.name.data # You could also have used request.form['name']
-            email = user_form.email.data # You could also have used request.form['email']
+#             flash('User successfully added')
+#             return redirect(url_for('show_users'))
 
-            # save user to database
-            user = User(name, email)
-            db.session.add(user)
-            db.session.commit()
-
-            flash('User successfully added')
-            return redirect(url_for('show_users'))
-
-    flash_errors(user_form)
-    return render_template('add_user.html', form=user_form)
+#     flash_errors(user_form)
+#     return render_template('add_user.html', form=user_form)
 
 # Flash errors from the form if validation fails
 def flash_errors(form):
@@ -67,14 +50,6 @@ def flash_errors(form):
             ))
 
 ###
-# The functions below should be applicable to all Flask apps.
-###
-
-@app.route('/<file_name>.txt')
-def send_text_file(file_name):
-    """Send your static text file."""
-    file_dot_text = file_name + '.txt'
-    return app.send_static_file(file_dot_text)
 
 
 @app.after_request
@@ -88,22 +63,20 @@ def add_header(response):
     return response
 
 
-@app.errorhandler(404)
-def page_not_found(error):
-    """Custom 404 page."""
-    return render_template('404.html'), 404
+# @app.errorhandler(404)
+# def page_not_found(error):
+#     """Custom 404 page."""
+#     return render_template('404.html'), 404
 
 
 
-##################
-
+## encryption functions - TODO, broken input and output
 def encrypt(message): 
     return base64.b64encode(message.encode('utf-8'))
 
 def decrypt(message_to_decrypt):
     return base64.b64decode(message_to_decrypt).decode('utf-8')
 
-####### BEGIN HERE #######
 
 @app.route('/encrypt', methods=['POST', 'GET'])
 def encrypt_decrypt():
@@ -155,129 +128,106 @@ def encrypt_decrypt():
     return render_template('encrypt.html', form=encryption_form)
 
 
-
-
-
-
-######### number sorting
-@app.route('/sort', methods=['POST', 'GET'])
-def sorting():
-
-    sort_form = SortForm()
-
-    if request.method == 'POST':
-        if sort_form.validate_on_submit():
-            # Get validated data from form
-       
-            numbers_to_sort = sort_form.table_to_sort.data # You could also have used request.form['text_to_encrypt']
-          
-            #   Converting to bytes
-            # key = str.encode(key)
-            # text_to_encrypt = str.encode(text_to_encrypt)
-            # text_to_decrypt = str.encode(text_to_decrypt)
-          
-
-            flash("Your decrypted text is   " + str(decrypted))
-            
-            #ERROR - 2 inputs
-            if text_to_encrypt and text_to_decrypt:
-
-                flash("Put text in only 1 box")
-
-    # flash_errors(encryption_form)
-    return render_template('encrypt.html', form=sort_form)
-
-
-
-#################################### REST
-def bubble_sort(array):
-    n = len(array)
-
-    for i in range(n):
-        # Create a flag that will allow the function to
-        # terminate early if there's nothing left to sort
-        already_sorted = True
-
-        # Start looking at each item of the list one by one,
-        # comparing it with its adjacent value. With each
-        # iteration, the portion of the array that you look at
-        # shrinks because the remaining items have already been
-        # sorted.
-        for j in range(n - i - 1):
-            if array[j] > array[j + 1]:
-                # If the item you're looking at is greater than its
-                # adjacent value, then swap them
-                array[j], array[j + 1] = array[j + 1], array[j]
-
-                # Since you had to swap two elements,
-                # set the `already_sorted` flag to `False` so the
-                # algorithm doesn't finish prematurely
-                already_sorted = False
-
-        # If there were no swaps during the last iteration,
-        # the array is already sorted, and you can terminate
-        if already_sorted:
-            break
-
-    return array
+#################################### REST endpoints
 
 import time
+
 @app.route('/api/bubblesort', methods=['POST'])
 def bubblesort():
     """
-    Sorts specified numbers from ascending to descending 
+    Sorts specified numbers from ascending to descending using bubble sort algorithm
 
     Input:
-    {
-    "numbers_to_sort": [
-        5,
-        1,
-        2,
-        ...
-    ]
-    }
+    {"numbers_to_sort": [5,1,2,...]}
 
     Output:
-    {"sorted_numbers": [1, 2, 5, ...]}
+    {"number_of_elements": 5148, "sorting_algorithm": "bubble_sort", "time_of_execution (ms)": 1958.4866, "sorted_numbers": [1, 2, 5 ...]} 
     """
-    # for(key, value) in request.headers.items():
-    #     print(key, value)
-    # print(request.json)
-    # print(type(request.json))
-    time_of_execution = 0
-
     try:
         table_to_sort = request.json["numbers_to_sort"]
 
         number_of_elements = len(table_to_sort)
-
-        print("Number of elements in the list: ", number_of_elements)
-
-
+ 
         # COUNTER START https://towardsdatascience.com/execution-times-in-python-ed45ecc1bb4d
         start_counter_ns = time.perf_counter_ns()
-        # for :
         sorted_table = bubble_sort(table_to_sort)
-        end_counter_ns = time.perf_counter_ns()
         # COUNTER STOP
+        end_counter_ns = time.perf_counter_ns()
         timer_ns = end_counter_ns - start_counter_ns
-        print(timer_ns)
-
+        #changing time from ns to ms 
         timer_ns = float((timer_ns / 1000000))
 
-        
-        time_of_execution = timer_ns
-        print(time_of_execution)
-        print(sorted_table)
-        print(type(sorted_table))
-
-        return json.dumps({'number_of_elements': number_of_elements, 'time_of_execution (ms)':time_of_execution, 'sorted_numbers': sorted_table}), 201
+        return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "bubble_sort",
+            'time_of_execution (ms)':timer_ns, 'sorted_numbers': sorted_table}), 201
     except:
-        print("Something went wrong with sorting numbers")
-        return 'Something went wrong with sorting numbers', 400
+        print("Something went wrong with sorting using bubble sort algorithm")
+        return 'Something went wrong with sorting using bubble sort algorithm', 400
 
     
+# insertion_sort insertionsort
+@app.route('/api/insertionsort', methods=['POST'])
+def insertionsort():
+    """
+    Sorts specified numbers from ascending to descending using insertion sort algorithm
 
+    Input:
+    {"numbers_to_sort": [5,1,2,...]}
+
+    Output:
+    {"number_of_elements": 5148, "sorting_algorithm": "insertion_sort", "time_of_execution (ms)": 1958.4866, "sorted_numbers": [1, 2, 5 ...]} 
+    """
+    try:
+        table_to_sort = request.json["numbers_to_sort"]
+
+        number_of_elements = len(table_to_sort)
+ 
+        # COUNTER START https://towardsdatascience.com/execution-times-in-python-ed45ecc1bb4d
+        start_counter_ns = time.perf_counter_ns()
+        sorted_table = insertion_sort(table_to_sort)
+        # COUNTER STOP
+        end_counter_ns = time.perf_counter_ns()
+        timer_ns = end_counter_ns - start_counter_ns
+        #changing time from ns to ms 
+        timer_ns = float((timer_ns / 1000000))
+
+        return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "insertion_sort",
+            'time_of_execution (ms)':timer_ns, 'sorted_numbers': sorted_table}), 201
+    except:
+        print("Something went wrong with sorting using insertionsort algorithm")
+        return 'Something went wrong with sorting using insertionsort algorithm', 400
+
+# quicksort
+
+@app.route('/api/quicksort', methods=['POST'])
+def quicksort():
+    """
+    Sorts specified numbers from ascending to descending using quicksort algorithm
+
+    Input:
+    {"numbers_to_sort": [5,1,2,...]}
+
+    Output:
+    {"number_of_elements": 5148, "sorting_algorithm": "quicksort", "time_of_execution (ms)": 1958.4866, "sorted_numbers": [1, 2, 5 ...]} 
+    """
+    try:
+        table_to_sort = request.json["numbers_to_sort"]
+
+        number_of_elements = len(table_to_sort)
+ 
+        # COUNTER START https://towardsdatascience.com/execution-times-in-python-ed45ecc1bb4d
+        start_counter_ns = time.perf_counter_ns()
+        sorted_table = quick_sort(table_to_sort)
+        # COUNTER STOP
+        end_counter_ns = time.perf_counter_ns()
+        timer_ns = end_counter_ns - start_counter_ns
+        #changing time from ns to ms 
+        timer_ns = float((timer_ns / 1000000))
+
+        return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "quicksort",
+            'time_of_execution (ms)':timer_ns, 'sorted_numbers': sorted_table}), 201
+    except:
+        print("Something went wrong with sorting using quicksort algorithm")
+        return 'Something went wrong with sorting using quicksort algorithm', 400
 
 
 
@@ -293,12 +243,9 @@ def generate_uuid():
     print(str(myuuids))
     print(type(myuuids))
 
-
-    for x in range(10):
-    
-        useragent = str(request.headers.get('User-Agent'))
-        myuuid = str(uuid.uuid4())
-        myuuids = (myuuids, myuuid)
+    useragent = str(request.headers.get('User-Agent'))
+    myuuid = str(uuid.uuid4())
+    myuuids = (myuuids, myuuid)
 
     print(type(myuuids))
 
