@@ -17,10 +17,14 @@
   <form method="POST" action="{{ url_for('encrypt_decrypt') }}">
     {{ form.csrf_token }}
   
- ENCODE
-    <div class="form-group">{{ form.text_to_encrypt.label }} {{ form.text_to_encrypt(size=1000, class="form-control") }}</div>
-DECODE
-    <div class="form-group">{{ form.text_to_decrypt.label }} {{ form.text_to_decrypt(size=1000, class="form-control") }}</div>
+    Bubble Sort Algorithm in Python
+    Bubble Sort is one of the most straightforward sorting algorithms. Its name comes from the way the algorithm works: With every new pass, the largest element in the list “bubbles up” toward its correct position.
+    
+    Bubble sort consists of making multiple passes through a list, comparing elements one by one, and swapping adjacent items that are out of order.
+    
+    
+    <div class="form-group">{{ form.table_to_sort.label }} {{ form.table_to_sort(size=1000, class="form-control") }}</div>
+
     <button type="submit" class="btn btn-primary">Submit</button>
 
  

@@ -5,9 +5,10 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
 
+import base64
 from app import app, db
 from flask import render_template, request, redirect, url_for, flash
-from app.forms import UserForm, EncryptionForm
+from app.forms import SortForm, UserForm, EncryptionForm
 from app.models import User
 # import sqlite3
 
@@ -93,72 +94,14 @@ def page_not_found(error):
     return render_template('404.html'), 404
 
 
-########################
 
+##################
 
+def encrypt(message): 
+    return base64.b64encode(message.encode('utf-8'))
 
-from Crypto.Cipher import AES
-import base64, os
-
-def generate_secret_key_for_AES_cipher():
-        # AES key length must be either 16, 24, or 32 bytes long
-    AES_key_length = 16 # use larger value in production
-    # generate a random secret key with the decided key length
-    # this secret key will be used to create AES cipher for encryption/decryption
-    secret_key = os.urandom(AES_key_length)
-    # encode this secret key for storing safely in database
-    encoded_secret_key = base64.b64encode(secret_key)
-    return encoded_secret_key
-
-import base64
-from Crypto.Cipher import AES
-from Crypto.Hash import SHA256
-from Crypto import Random
-
-def encrypt(key, source, encode=True):
-    key = SHA256.new(key).digest()  # use SHA-256 over our key to get a proper-sized AES key
-    IV = Random.new().read(AES.block_size)  # generate IV
-    encryptor = AES.new(key, AES.MODE_CBC, IV)
-    padding = AES.block_size - len(source) % AES.block_size  # calculate needed padding
-    source += bytes([padding]) * padding  # Python 2.x: source += chr(padding) * padding
-    data = IV + encryptor.encrypt(source)  # store the IV at the beginning and encrypt
-    return base64.b64encode(data).decode("latin-1") if encode else data
-
-def decrypt(key, source, decode=True):
-    if decode:
-        source = base64.b64decode(source.encode("latin-1"))
-    key = SHA256.new(key).digest()  # use SHA-256 over our key to get a proper-sized AES key
-    IV = source[:AES.block_size]  # extract the IV from the beginning
-    decryptor = AES.new(key, AES.MODE_CBC, IV)
-    data = decryptor.decrypt(source[AES.block_size:])  # decrypt
-    padding = data[-1]  # pick the padding value from the end; Python 2.x: ord(data[-1])
-    if data[-padding:] != bytes([padding]) * padding:  # Python 2.x: chr(padding) * padding
-        raise ValueError("Invalid padding...")
-    return data[:-padding]  # remove the padding
-
-
-
-# my_password = b"SECRET KEY TO DECRYPT" # decrypt KEY
-# print("##############################################")
-# print(type(my_password))
-
-# my_data = b"hello I'm text" #what you wand decrypted
-
-# print("key:  {}".format(my_password))
-# print("data: {}".format(my_data))
-# encrypted = encrypt(my_password, my_data)
-# print("\nenc:  {}".format(encrypted))
-# decrypted = decrypt(my_password, encrypted)
-# print("dec:  {}".format(decrypted))
-# print("\ndata match: {}".format(my_data == decrypted))
-
-# print("\nSecond round....")
-# encrypted = encrypt(my_password, my_data)
-# print("\nenc:  {}".format(encrypted))
-# decrypted = decrypt(my_password, encrypted)
-# print("dec:  {}".format(decrypted))
-# print("\ndata match: {}".format(my_data == decrypted))
-
+def decrypt(message_to_decrypt):
+    return base64.b64decode(message_to_decrypt).decode('utf-8')
 
 ####### BEGIN HERE #######
 
@@ -173,34 +116,28 @@ def encrypt_decrypt():
     if request.method == 'POST':
         if encryption_form.validate_on_submit():
             # Get validated data from form
-            key = encryption_form.key.data # You could also have used request.form['key']
+       
             text_to_encrypt = encryption_form.text_to_encrypt.data # You could also have used request.form['text_to_encrypt']
             text_to_decrypt = encryption_form.text_to_decrypt.data # You could also have used request.form['text_to_decrypt']
 
             #   Converting to bytes
-            key = (key)
-            text_to_encrypt = str.encode(text_to_encrypt)
-            text_to_decrypt = str.encode(text_to_decrypt)
+            # key = str.encode(key)
+            # text_to_encrypt = str.encode(text_to_encrypt)
+            # text_to_decrypt = str.encode(text_to_decrypt)
             #ENCRYPTION
             if text_to_encrypt and not text_to_decrypt:
+ 
+                encrypted = encrypt(text_to_encrypt)
                 
-                
-                print("key:  {}".format(key))
-                print("data: {}".format(text_to_encrypt))
-                encrypted = encrypt(key, text_to_encrypt)
                 print(type(encrypted))
                 print("\nenc:  {}".format(encrypted))
-
-
 
                 flash("Your encrypted text is   " + str(encrypted))
             #DECRYPTION
             if not text_to_encrypt and text_to_decrypt:
-                # decrypted = decrypt(my_password, encrypted)
+       
 
-                print(type(key))
-                print(type(text_to_decrypt))
-                decrypted = decrypt(key, text_to_decrypt)
+                decrypted = decrypt(text_to_decrypt)
                 print("dec:  {}".format(decrypted))
                 print("\ndata match: {}".format(text_to_decrypt == decrypted))
 
@@ -209,13 +146,140 @@ def encrypt_decrypt():
             
             #ERROR - 2 inputs
             if text_to_encrypt and text_to_decrypt:
-                print("lololo")
-            # return redirect(url_for('show_users'))
+
+                flash("Put text in only 1 box")
 
             
 
     # flash_errors(encryption_form)
     return render_template('encrypt.html', form=encryption_form)
+
+
+
+
+
+
+######### number sorting
+@app.route('/sort', methods=['POST', 'GET'])
+def sorting():
+
+    sort_form = SortForm()
+
+    if request.method == 'POST':
+        if sort_form.validate_on_submit():
+            # Get validated data from form
+       
+            numbers_to_sort = sort_form.table_to_sort.data # You could also have used request.form['text_to_encrypt']
+          
+            #   Converting to bytes
+            # key = str.encode(key)
+            # text_to_encrypt = str.encode(text_to_encrypt)
+            # text_to_decrypt = str.encode(text_to_decrypt)
+          
+
+            flash("Your decrypted text is   " + str(decrypted))
+            
+            #ERROR - 2 inputs
+            if text_to_encrypt and text_to_decrypt:
+
+                flash("Put text in only 1 box")
+
+    # flash_errors(encryption_form)
+    return render_template('encrypt.html', form=sort_form)
+
+
+
+#################################### REST
+def bubble_sort(array):
+    n = len(array)
+
+    for i in range(n):
+        # Create a flag that will allow the function to
+        # terminate early if there's nothing left to sort
+        already_sorted = True
+
+        # Start looking at each item of the list one by one,
+        # comparing it with its adjacent value. With each
+        # iteration, the portion of the array that you look at
+        # shrinks because the remaining items have already been
+        # sorted.
+        for j in range(n - i - 1):
+            if array[j] > array[j + 1]:
+                # If the item you're looking at is greater than its
+                # adjacent value, then swap them
+                array[j], array[j + 1] = array[j + 1], array[j]
+
+                # Since you had to swap two elements,
+                # set the `already_sorted` flag to `False` so the
+                # algorithm doesn't finish prematurely
+                already_sorted = False
+
+        # If there were no swaps during the last iteration,
+        # the array is already sorted, and you can terminate
+        if already_sorted:
+            break
+
+    return array
+
+import time
+@app.route('/api/bubblesort', methods=['POST'])
+def bubblesort():
+    """
+    Sorts specified numbers from ascending to descending 
+
+    Input:
+    {
+    "numbers_to_sort": [
+        5,
+        1,
+        2,
+        ...
+    ]
+    }
+
+    Output:
+    {"sorted_numbers": [1, 2, 5, ...]}
+    """
+    # for(key, value) in request.headers.items():
+    #     print(key, value)
+    # print(request.json)
+    # print(type(request.json))
+    time_of_execution = 0
+
+    try:
+        table_to_sort = request.json["numbers_to_sort"]
+
+        number_of_elements = len(table_to_sort)
+
+        print("Number of elements in the list: ", number_of_elements)
+
+
+        # COUNTER START https://towardsdatascience.com/execution-times-in-python-ed45ecc1bb4d
+        start_counter_ns = time.perf_counter_ns()
+        # for :
+        sorted_table = bubble_sort(table_to_sort)
+        end_counter_ns = time.perf_counter_ns()
+        # COUNTER STOP
+        timer_ns = end_counter_ns - start_counter_ns
+        print(timer_ns)
+
+        timer_ns = float((timer_ns / 1000000))
+
+        
+        time_of_execution = timer_ns
+        print(time_of_execution)
+        print(sorted_table)
+        print(type(sorted_table))
+
+        return json.dumps({'number_of_elements': number_of_elements, 'time_of_execution (ms)':time_of_execution, 'sorted_numbers': sorted_table}), 201
+    except:
+        print("Something went wrong with sorting numbers")
+        return 'Something went wrong with sorting numbers', 400
+
+    
+
+
+
 
 @app.route('/api/uuid', methods=['GET'])
 def generate_uuid():
