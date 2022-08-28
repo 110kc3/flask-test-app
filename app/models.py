@@ -15,7 +15,7 @@ class User(db.Model):
 
 
 class AlgorithmResults(db.Model):
-    __tablename__ = 'results'
+    __tablename__ = 'sorting_results'
     id = db.Column(db.Integer, primary_key = True)
     number_of_elements = db.Column(db.Integer)
     sorting_algorithm = db.Column(db.String(255))

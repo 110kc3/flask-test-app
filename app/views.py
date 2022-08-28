@@ -8,48 +8,12 @@ This file creates your application.
 import base64
 from app import app, db
 from flask import render_template, request, redirect, url_for, flash
-from app.forms import SortForm, UserForm, EncryptionForm
-from app.models import User
-# import sqlite3
-
+from app.forms import AlgorithmResultsForm, SortForm, UserForm, EncryptionForm
+from app.models import AlgorithmResults, User
 import json
 import uuid
-
 from app.utils.sorting_algorithms import bubble_sort, insertion_sort, quick_sort
 
-
-
-# @app.route('/add-user', methods=['POST', 'GET'])
-# def add_user():
-#     user_form = UserForm()
-
-#     if request.method == 'POST':
-#         if user_form.validate_on_submit():
-#             # Get validated data from form
-#             name = user_form.name.data # You could also have used request.form['name']
-#             email = user_form.email.data # You could also have used request.form['email']
-
-#             # save user to database
-#             user = User(name, email)
-#             db.session.add(user)
-#             db.session.commit()
-
-#             flash('User successfully added')
-#             return redirect(url_for('show_users'))
-
-#     flash_errors(user_form)
-#     return render_template('add_user.html', form=user_form)
-
-# Flash errors from the form if validation fails
-def flash_errors(form):
-    for field, errors in form.errors.items():
-        for error in errors:
-            flash(u"Error in the %s field - %s" % (
-                getattr(form, field).label.text,
-                error
-            ))
-
-###
 
 
 @app.after_request
@@ -61,12 +25,6 @@ def add_header(response):
     response.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1'
     response.headers['Cache-Control'] = 'public, max-age=600'
     return response
-
-
-# @app.errorhandler(404)
-# def page_not_found(error):
-#     """Custom 404 page."""
-#     return render_template('404.html'), 404
 
 
 
@@ -157,6 +115,13 @@ def bubblesort():
         #changing time from ns to ms 
         timer_ns = float((timer_ns / 1000000))
 
+        #if chosen to save data in db
+        if(request.json["save_in_db"] == 1):
+            results = AlgorithmResults(number_of_elements, "bubble_sort",timer_ns)
+            db.session.add(results)
+            db.session.commit()
+
+           
         return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "bubble_sort",
             'time_of_execution (ms)':timer_ns, 'sorted_numbers': sorted_table}), 201
     except:
@@ -190,6 +155,14 @@ def insertionsort():
         #changing time from ns to ms 
         timer_ns = float((timer_ns / 1000000))
 
+        #if chosen to save data in db
+        if(request.json["save_in_db"] == 1):
+            results = AlgorithmResults(number_of_elements, "insertion_sort",timer_ns)
+            db.session.add(results)
+            db.session.commit()
+
+           
+
         return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "insertion_sort",
             'time_of_execution (ms)':timer_ns, 'sorted_numbers': sorted_table}), 201
     except:
@@ -222,14 +195,17 @@ def quicksort():
         timer_ns = end_counter_ns - start_counter_ns
         #changing time from ns to ms 
         timer_ns = float((timer_ns / 1000000))
+        #if chosen to save data in db
+        if(request.json["save_in_db"] == 1):
+            results = AlgorithmResults(number_of_elements, "quicksort",timer_ns)
+            db.session.add(results)
+            db.session.commit()
 
         return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "quicksort",
             'time_of_execution (ms)':timer_ns, 'sorted_numbers': sorted_table}), 201
     except:
         print("Something went wrong with sorting using quicksort algorithm")
         return 'Something went wrong with sorting using quicksort algorithm', 400
-
-
 
 @app.route('/api/uuid', methods=['GET'])
 def generate_uuid():
@@ -252,63 +228,27 @@ def generate_uuid():
     return json.dumps({'uuid': myuuids, 'useragent': useragent}), 201
 
 
-# @app.route('/api/uuid', methods=['POST'])
-# def generate_uuid_post():
-#     """
-#     Generates a new UUID for the user and saves it in DB
-#     """
-#     # for(key, value) in request.headers.items():
-#     #     print(key, value)
-#     if(request.form.get('generate') == "1"):
-#         # print("hello")
-        
-#         useragent = str(request.headers.get('User-Agent'))
-
-#         #generate uuid
-#         myuuid = str(uuid.uuid4())
 
 
-#         # checking if user already exists
-#         # if the uuid exists - generate new one 
-#         while UniqueIDs.query.filter_by(uuid=myuuid).first() is not None:
-#             myuuid = str(uuid.uuid4())
-        
-#         try:
-#             # save uuid to db
-#             new_uuid = UniqueIDs(uuid=myuuid, useragent=useragent)
-#             session.add(new_uuid)
-#             session.commit()
-#         except:
-#             session.rollback()
-#             raise
-#         finally:
-#             session.close()
-#         return json.dumps({'uuid': myuuid, 'saved_to_db': "yes"}), 201
-#     else:
-#         return json.dumps({'saved_to_db': "no"}), 201
-
-
-
-
-# @app.route('/view', methods=['GET'])
-# def view():
-#     """
-#     Fetches all UUID saved in the DB
-#     """
-#     uuids = UniqueIDs.query.all()
-#     # response list consisting user details
-#     response = list()
+@app.route('/api/view', methods=['GET'])
+def view():
+    """
+    Fetches all data saved in the DB for algorithms results
+    """
+    results = AlgorithmResults.query.all()
+    # response list consisting user details
+    response = list()
  
-#     for uuid in uuids:
-#         response.append({
-#             'id': uuid.id,
-#             'uuid': uuid.uuid,
-#             'useragent': uuid.useragent
-#         })
-#     return json.dumps({
-#         'status' : 'success',
-#         'message': response
-#     }), 200
+    for result in results:
+        response.append({
+            'number_of_elements': result.number_of_elements,
+            'sorting_algorithm': result.sorting_algorithm,
+            'time_of_execution': result.time_of_execution
+        })
+    return json.dumps({
+        'status' : 'success',
+        'message': response
+    }), 200
 
 ######################
 
