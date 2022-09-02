@@ -13,6 +13,9 @@ spec:
         app: flaskapp
     spec:
       serviceAccountName: build-robot
+      nodeSelector:
+        iam.gke.io/gke-metadata-server-enabled: "true"
+
       # [END cloud_sql_proxy_k8s_sa]
       # [START cloud_sql_proxy_k8s_secrets]
       containers:
@@ -35,6 +38,31 @@ spec:
 
 
         env:
+          - name: CLOUD_SQL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: flask-token-secret
+                key: CLOUD_SQL_USERNAME
+                optional: false # same as default; "mysecret" must exist
+                                # and include a key named "username"
+          - name: CLOUD_SQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: flask-token-secret
+                key: CLOUD_SQL_PASSWORD
+                optional: false 
+          - name: CLOUD_SQL_DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: flask-token-secret
+                key: CLOUD_SQL_DATABASE_NAME
+                optional: false 
+          - name: CLOUD_SQL_CONNECTION_NAME
+            valueFrom:
+              secretKeyRef:
+                name: flask-token-secret
+                key: CLOUD_SQL_CONNECTION_NAME
+                optional: false 
           - name: DATABASE_URL
             valueFrom:
               secretKeyRef:
@@ -43,12 +71,13 @@ spec:
                 optional: false 
 
 
+
       # [END cloud_sql_proxy_k8s_secrets]
       # [START cloud_sql_proxy_k8s_container]
       - name: cloud-sql-proxy
         # It is recommended to use the latest version of the Cloud SQL proxy
         # Make sure to update on a regular schedule!
-        image: gcr.io/cloudsql-docker/gce-proxy:1.28.0 # make sure the use the latest version
+        image: gcr.io/cloudsql-docker/gce-proxy:1.31.2 # make sure the use the latest version
         command:
           - "/cloud_sql_proxy"
 
@@ -60,11 +89,12 @@ spec:
           # environments, anything printed to stderr is consider an error. To
           # disable this behavior and write all logs to stdout (except errors
           # which will still go to stderr), use:
-          - "-log_debug_stdout"
+          # - "-log_debug_stdout"
 
           # Replace DB_PORT with the port the proxy should listen on
           # Defaults: MySQL: 3306, Postgres: 5432, SQLServer: 1433
           - "-instances=sonic-column-358417:europe-central2:mysql-5-7-instance=tcp:3306"
+
         securityContext:
           # The default Cloud SQL proxy image runs as the
           # "nonroot" user and group (uid: 65532) by default.
