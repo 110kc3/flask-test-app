@@ -89,6 +89,7 @@ def encrypt_decrypt():
 #################################### REST endpoints
 
 import time
+from time import perf_counter
 
 @app.route('/api/bubblesort', methods=['POST'])
 def bubblesort():
@@ -107,23 +108,22 @@ def bubblesort():
         number_of_elements = len(table_to_sort)
  
         # COUNTER START https://towardsdatascience.com/execution-times-in-python-ed45ecc1bb4d
-        start_counter_ns = time.perf_counter_ns()
+        start_counter_ns = time.perf_counter()
         sorted_table = bubble_sort(table_to_sort)
         # COUNTER STOP
-        end_counter_ns = time.perf_counter_ns()
-        timer_ns = end_counter_ns - start_counter_ns
-        #changing time from ns to ms 
-        timer_ns = float((timer_ns / 1000000))
+        end_counter_ns = time.perf_counter()
+        timer_s = end_counter_ns - start_counter_ns
+        timer_s = float((timer_s))
 
         #if chosen to save data in db
         if(request.json["save_in_db"] == 1):
-            results = AlgorithmResults(number_of_elements, "bubble_sort",timer_ns)
+            results = AlgorithmResults(number_of_elements, "bubble_sort",timer_s)
             db.session.add(results)
             db.session.commit()
 
            
         return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "bubble_sort",
-            'time_of_execution (ms)':timer_ns, 'sorted_numbers': sorted_table}), 201
+            'time_of_execution (ms)':timer_s, 'sorted_numbers': sorted_table}), 201
     except:
         print("Something went wrong with sorting using bubble sort algorithm")
         return 'Something went wrong with sorting using bubble sort algorithm', 400
@@ -147,24 +147,23 @@ def insertionsort():
         number_of_elements = len(table_to_sort)
  
         # COUNTER START https://towardsdatascience.com/execution-times-in-python-ed45ecc1bb4d
-        start_counter_ns = time.perf_counter_ns()
+        start_counter_ns = time.perf_counter()
         sorted_table = insertion_sort(table_to_sort)
         # COUNTER STOP
-        end_counter_ns = time.perf_counter_ns()
-        timer_ns = end_counter_ns - start_counter_ns
-        #changing time from ns to ms 
-        timer_ns = float((timer_ns / 1000000))
+        end_counter_ns = time.perf_counter()
+        timer_s = end_counter_ns - start_counter_ns
+        timer_s = float((timer_s))
 
         #if chosen to save data in db
         if(request.json["save_in_db"] == 1):
-            results = AlgorithmResults(number_of_elements, "insertion_sort",timer_ns)
+            results = AlgorithmResults(number_of_elements, "insertion_sort",timer_s)
             db.session.add(results)
             db.session.commit()
 
            
 
         return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "insertion_sort",
-            'time_of_execution (ms)':timer_ns, 'sorted_numbers': sorted_table}), 201
+            'time_of_execution (ms)':timer_s, 'sorted_numbers': sorted_table}), 201
     except:
         print("Something went wrong with sorting using insertionsort algorithm")
         return 'Something went wrong with sorting using insertionsort algorithm', 400
@@ -188,21 +187,21 @@ def quicksort():
         number_of_elements = len(table_to_sort)
  
         # COUNTER START https://towardsdatascience.com/execution-times-in-python-ed45ecc1bb4d
-        start_counter_ns = time.perf_counter_ns()
+        start_counter_ns = time.perf_counter()
         sorted_table = quick_sort(table_to_sort)
         # COUNTER STOP
-        end_counter_ns = time.perf_counter_ns()
-        timer_ns = end_counter_ns - start_counter_ns
-        #changing time from ns to ms 
-        timer_ns = float((timer_ns / 1000000))
+        end_counter_ns = time.perf_counter()
+        timer_s = end_counter_ns - start_counter_ns
+        #specifing time to float
+        timer_s = float((timer_s))
         #if chosen to save data in db
         if(request.json["save_in_db"] == 1):
-            results = AlgorithmResults(number_of_elements, "quicksort",timer_ns)
+            results = AlgorithmResults(number_of_elements, "quicksort",timer_s)
             db.session.add(results)
             db.session.commit()
 
         return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "quicksort",
-            'time_of_execution (ms)':timer_ns, 'sorted_numbers': sorted_table}), 201
+            'time_of_execution (s)':timer_s, 'sorted_numbers': sorted_table}), 201
     except:
         print("Something went wrong with sorting using quicksort algorithm")
         return 'Something went wrong with sorting using quicksort algorithm', 400
