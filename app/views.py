@@ -100,7 +100,7 @@ def bubblesort():
     {"numbers_to_sort": [5,1,2,...]}
 
     Output:
-    {"number_of_elements": 5148, "sorting_algorithm": "bubble_sort", "time_of_execution (ms)": 1958.4866, "sorted_numbers": [1, 2, 5 ...]} 
+    {"number_of_elements": 5148, "sorting_algorithm": "bubble_sort", "time_of_execution (s)": 1958.4866, "sorted_numbers": [1, 2, 5 ...]} 
     """
     try:
         table_to_sort = request.json["numbers_to_sort"]
@@ -123,7 +123,7 @@ def bubblesort():
 
            
         return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "bubble_sort",
-            'time_of_execution (ms)':timer_s, 'sorted_numbers': sorted_table}), 201
+            'time_of_execution (s)':timer_s, 'sorted_numbers': sorted_table}), 201
     except:
         print("Something went wrong with sorting using bubble sort algorithm")
         return 'Something went wrong with sorting using bubble sort algorithm', 400
@@ -139,7 +139,7 @@ def insertionsort():
     {"numbers_to_sort": [5,1,2,...]}
 
     Output:
-    {"number_of_elements": 5148, "sorting_algorithm": "insertion_sort", "time_of_execution (ms)": 1958.4866, "sorted_numbers": [1, 2, 5 ...]} 
+    {"number_of_elements": 5148, "sorting_algorithm": "insertion_sort", "time_of_execution (s)": 1958.4866, "sorted_numbers": [1, 2, 5 ...]} 
     """
     try:
         table_to_sort = request.json["numbers_to_sort"]
@@ -163,7 +163,7 @@ def insertionsort():
            
 
         return json.dumps({'number_of_elements': number_of_elements, "sorting_algorithm": "insertion_sort",
-            'time_of_execution (ms)':timer_s, 'sorted_numbers': sorted_table}), 201
+            'time_of_execution (s)':timer_s, 'sorted_numbers': sorted_table}), 201
     except:
         print("Something went wrong with sorting using insertionsort algorithm")
         return 'Something went wrong with sorting using insertionsort algorithm', 400
@@ -179,7 +179,7 @@ def quicksort():
     {"numbers_to_sort": [5,1,2,...]}
 
     Output:
-    {"number_of_elements": 5148, "sorting_algorithm": "quicksort", "time_of_execution (ms)": 1958.4866, "sorted_numbers": [1, 2, 5 ...]} 
+    {"number_of_elements": 5148, "sorting_algorithm": "quicksort", "time_of_execution (s)": 1958.4866, "sorted_numbers": [1, 2, 5 ...]} 
     """
     try:
         table_to_sort = request.json["numbers_to_sort"]
