@@ -1,0 +1,14 @@
+[Unit]
+Description=Gunicorn3 instance to serve flask-app
+After=network.target
+
+[Service]
+User=k_choinski2
+Group=www-data
+WorkingDirectory=/var/www/flask-test-app
+Environment="PATH=/home/k_choinski2/.local/bin"
+ExecStart=/usr/bin/gunicorn3 --workers 2 --bind unix:/var/www/flask-test-app/flask-test-app.sock -m 007 wsgi:app 
+#ExecStart=/usr/bin/gunicorn3 --workers 2 --bind unix:/var/www/flask-test-app/flask-test-app.sock -m 007 wsgi:app --loglevel debug --accesslog /var/log/gunicorn/access_log_flaskapp --errorlog /var/log/gunicorn/error_log_flaskapp
+#ExecStart=/usr/bin/gunicorn3 --workers 2 --bind unix:/var/www/flask-test-app/flask-test-app.sock -m 007 wsgi:app --log-level debug --access-logfile /var/log/gunicorn/access_log_flaskapp --error-logfile /var/log/gunicorn/error_log_flaskapp
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,83 @@
+
+Basic information
+Name
+flask-serving-vm
+Instance Id
+3116339921388191553
+Description
+None
+Type
+Instance
+Status
+ Running
+Creation time
+Sep 9, 2022, 8:10:56 PM UTC+02:00
+Zone
+europe-central2-a
+Instance template
+None
+In use by
+None
+Reservations
+Automatically choose
+Labels
+None
+Tags 
+—
+Deletion protection
+Disabled
+Confidential VM service
+Disabled
+Preserved state size
+0 GB
+
+
+Basic info
+OS
+Ubuntu 18.04.6 LTS
+OS version
+18.04
+OS Config agent version
+20210608.1-0ubuntu1~18.04.1
+Boot disk
+ubuntu-1804-bionic-v20220901	
+
+Machine configuration
+Machine type
+n1-standard-1
+CPU platform
+Intel Skylake
+Architecture
+x86/64
+Display device
+Disabled
+
+Firewalls
+HTTP traffic
+On
+HTTPS traffic
+On
+
+Network tags
+allow-http-8080 http-server https-server
+
+Custom metadata
+Key
+Value
+startup-script	
+#! /bin/bash 
+sudo apt update
+sudo apt-get install git -y 
+sudo apt-get install python3-pip -y  
+
+sudo apt install  python3-dev build-essential libssl-dev libffi-dev python3-setuptools -y
+
+sudo apt install python3-dev build-essential -y
+sudo apt install libssl1.1 -y
+sudo apt install libssl1.1=1.1.1f-1ubuntu2 -y
+sudo apt install libssl-dev -y
+sudo apt install libmysqlclient-dev -y
+pip3 install mysqlclient
+
+pip3 install flask gunicorn3
+

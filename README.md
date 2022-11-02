@@ -1,6 +1,17 @@
 # flask-test-app
 
-# Test env:
+# Files
+Linux systemd file that runs Gunicorn3 as a service: flask-app.service
+
+sudo systemctl enable flask-app
+
+sudo systemctl start flask-app
+
+sudo systemctl daemon-reload
+
+GCP VM configuration - VM_configuration.txt
+
+# Test environment:
 conda activate flask-test-app
 
 In VS Code, open the Command Palette (View > Command Palette or (Ctrl+Shift+P)). Then select the Python: Select Interpreter command:
@@ -18,7 +29,6 @@ In progress:
 
 1. budowanie obrazka
 docker build -t 110kc3/flaskapp . 
-
 
 docker images #see build images
 
@@ -38,6 +48,8 @@ net localgroup docker-users desktop-49qn32k\kamil /add
 
 From <https://cloud.google.com/container-registry/docs/advanced-authentication#windows> 
 
+-----------------------------  installing gcloud CLI
+https://cloud.google.com/sdk/docs/install-sdk
 
 3. Push obrazu do container-registry w GCP
 https://cloud.google.com/container-registry/docs/pushing-and-pulling
@@ -47,13 +59,18 @@ docker push gcr.io/oceanic-glazing-347308/flaskapp
 
 
 
-
-
-
 4. deployment
 https://cloud.google.com/kubernetes-engine/docs/deploy-app-cluster
 
-gcloud container clusters get-credentials cluster-1 
+gcloud config set project sonic-column-358417
+
+gcloud config set compute/zone europe-central2-a 
+
+gcloud config set compute/region europe-central2
+
+gcloud container clusters get-credentials cluster-2
+
+kubectl create secret generic flask-token-secret --from-literal XXXXX
 
 kubectl apply -f service-account.yaml
 kubectl apply -f .\proxy_with_workload_identity.yaml 
@@ -84,3 +101,5 @@ https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-accou
 
 Options explaining configuration:
 Connecting to Cloud SQL from Kubernetes - https://www.youtube.com/watch?v=CNnzbNQgyzo
+
+Remember to add k8s cluster IP to database allowed list
